@@ -46,3 +46,4 @@ cache_percentage
 
 h2. Thanks
 
+Muzpan for the initial Python to talk to Varnish.
