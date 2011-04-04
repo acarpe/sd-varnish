@@ -1,0 +1,48 @@
+h1. Add Varnish Monitoring to Server Density
+
+Installation
+
+* Configure your agent so that it knows about a plugin directory http://www.serverdensity.com/docs/agent/plugins/ 
+* Move the Varnish.py into that directory 
+* Your Varnish instance will need to be running with a Management Port (http://www.varnish-cache.org/trac/wiki/ManagementPort)
+* Edit plugin lines 15 and 16 to add your admin IP and Port. 
+* Restart the agent (service sd-agent restart)
+
+* Head to https://youraccount.serverdensity.com/plugins/ and Add new plugin
+* Add a plugin called Varnish
+* Edit the Varnish plugin and enter the groups for the graphs below, sorry you have to do this, but there's no way to suggest this layout in the plugin.
+
+
+Title: Usage
+requests
+cache_hits
+cache_hits_pass
+cache_miss
+
+Title: TotalBytesSent
+sent_header
+sent_body
+sent_total
+
+Title: Backend
+backend_conn
+backend_unhealthy
+backend_busy
+backend_fail
+backend_recycle
+backend_unused
+backend_req
+
+Title: Threads
+threads_created
+threads_running
+threads_not_created
+queued_requests
+
+Title: CachePercentage
+cache_percentage
+
+* Enjoy Varnish stats in Server Density
+
+h2. Thanks
+
