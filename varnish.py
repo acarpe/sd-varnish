@@ -18,15 +18,21 @@ import re
 
 class Varnish:
 	def __init__(self, agentConfig, checksLogger, rawConfig):
-		self.agentConfig = agentConfig
-		self.checksLogger = checksLogger
-		self.rawConfig = rawConfig
-		
+	    self.agentConfig = agentConfig
+	    self.checksLogger = checksLogger
+	    self.rawConfig = rawConfig
+	
+	def get_value(self, pattern, fromThis):
+	    result = re.search(pattern, fromThis)
+	    if result is None:
+	        return 0
+	    return result.group(0).split()[0]
+	
 	def run(self):
 	    stats = {}
 
 	    host = "127.0.0.1"
-	    port = 2000
+	    port = 6082
 
 	    telnet = telnetlib.Telnet()
 	    telnet.open(host, port)
@@ -40,10 +46,10 @@ class Varnish:
 	    #
 	    # pulling out the hit/miss stats
 	    #
-	    req = re.search("\d+  Client requests received", out).group(0).split()[0]
-	    hits = re.search("\d+  Cache hits", out).group(0).split()[0]
-	    hits_pass = re.search("\d+  Cache hits for pass", out).group(0).split()[0]
-	    miss = re.search("\d+  Cache misses", out).group(0).split()[0]
+	    req = self.get_value("\d+  Client requests received", out)
+	    hits = self.get_value("\d+  Cache hits", out)
+	    hits_pass = self.get_value("\d+  Cache hits for pass", out)
+	    miss = self.get_value("\d+  Cache misses", out)
 	    hit_percent = round(((float(hits) + float(hits_pass)) / (float(hits) + float(miss) + float(hits_pass))) * 100, 1)
 
 	    stats['requests'] = req
@@ -55,8 +61,8 @@ class Varnish:
 	    #
 	    # pulling out the cache size usage
 	    #
-	    bytes_free = re.search("\d+  bytes allocated", out).group(0).split()[0]
-	    bytes_used = re.search("\d+  bytes free", out).group(0).split()[0]
+	    bytes_free = self.get_value("\d+  bytes allocated", out)
+	    bytes_used = self.get_value("\d+  bytes free", out)
 	    bytes_total = int(bytes_free) + int(bytes_used)
 
 	    stats['bytes_free'] = bytes_free
@@ -67,13 +73,13 @@ class Varnish:
 	    #
 	    # pulling out the backend info
 	    #
-	    backend_conn = re.search("\d+  Backend conn. success", out).group(0).split()[0]
-	    backend_unhealthy = re.search("\d+  Backend conn. not attempted", out).group(0).split()[0]
-	    backend_busy = re.search("\d+  Backend conn. too many", out).group(0).split()[0]
-	    backend_fail = re.search("\d+  Backend conn. failures", out).group(0).split()[0]
-	    backend_reuse = re.search("\d+  Backend conn. reuses", out).group(0).split()[0]
-	    backend_recycle = re.search("\d+  Backend conn. recycles", out).group(0).split()[0]
-	    backend_unused = re.search("\d+  Backend conn. unused", out).group(0).split()[0]
+	    backend_conn = self.get_value("\d+  Backend conn. success", out)
+	    backend_unhealthy = self.get_value("\d+  Backend conn. not attempted", out)
+	    backend_busy = self.get_value("\d+  Backend conn. too many", out)
+	    backend_fail = self.get_value("\d+  Backend conn. failures", out)
+	    backend_reuse = self.get_value("\d+  Backend conn. reuses", out)
+	    backend_recycle = self.get_value("\d+  Backend conn. recycles", out)
+	    backend_unused = self.get_value("\d+  Backend conn. unused", out)
 	    backend_req = int(backend_conn) + int(backend_unhealthy) + int(backend_busy) + int(backend_fail) + int(backend_reuse) + int(backend_recycle) + int(backend_unused) 
 
 	    stats['backend_conn'] = backend_conn
@@ -88,10 +94,10 @@ class Varnish:
 	    #
 	    # pulling out all the thread information
 	    #
-	    threads_created = re.search("\d+  N worker threads created", out).group(0).split()[0]
-	    threads_running = re.search("\d+  N worker threads", out).group(0).split()[0]
-	    threads_not_created = re.search("\d+  N worker threads not created", out).group(0).split()[0]
-	    queued_requests = re.search("\d+  N queued work requests", out).group(0).split()[0]
+	    threads_created = self.get_value("\d+  N worker threads created", out)
+	    threads_running = self.get_value("\d+  N worker threads", out)
+	    threads_not_created = self.get_value("\d+  N worker threads not created", out)
+	    queued_requests = self.get_value("\d+  N queued work requests", out)
 
 	    stats['threads_created'] = threads_created
 	    stats['threads_running'] = threads_running
@@ -101,8 +107,8 @@ class Varnish:
 	    #
 	    # getting total bytes sent to client
 	    #
-	    sent_header = re.search("\d+  Total header bytes", out).group(0).split()[0]
-	    sent_body = re.search("\d+  Total body bytes", out).group(0).split()[0]
+	    sent_header = self.get_value("\d+  Total header bytes", out)
+	    sent_body = self.get_value("\d+  Total body bytes", out)
 	    sent_total = int(sent_header) + int(sent_body)
 
 	    stats['sent_header'] = sent_header
@@ -110,3 +116,4 @@ class Varnish:
 	    stats['sent_total'] = str(sent_total)
 
 	    return stats
+
